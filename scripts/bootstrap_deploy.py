@@ -63,33 +63,29 @@ def bootstrap(force: bool = False, matches_per_season: int = 55) -> dict:
     needs_real_upgrade = prefer_real and current_source() != "cricsheet"
 
     if force_rebuild or not warehouse_ready() or needs_real_upgrade:
+        # Clear FIRST, then write processed tables, then load DB.
+        _clear_warehouse_artifacts()
         source_used = "synthetic"
-        tables = None
 
         if prefer_real:
             print("[bootstrap] Trying real Cricsheet IPL dataset...")
             tables = try_load_cricsheet()
             if tables is not None:
                 source_used = "cricsheet"
-
-        if tables is None:
-            print("[bootstrap] Cricsheet unavailable - generating synthetic fallback...")
-            if warehouse_ready() and current_source() == "cricsheet" and not force_rebuild:
-                summary["warehouse"] = "exists"
-                source_used = "cricsheet"
             else:
-                _clear_warehouse_artifacts()
+                print("[bootstrap] Cricsheet unavailable - generating synthetic fallback...")
                 generate_synthetic_ipl(matches_per_season=matches_per_season)
                 source_used = "synthetic"
         else:
-            _clear_warehouse_artifacts()
+            print("[bootstrap] Generating synthetic IPL dataset...")
+            generate_synthetic_ipl(matches_per_season=matches_per_season)
+            source_used = "synthetic"
 
-        if summary["warehouse"] != "exists":
-            print(f"[bootstrap] Loading warehouse (source={source_used})...")
-            counts = load_tables_from_dir(PROCESSED_DIR)
-            summary["warehouse"] = "built"
-            summary["counts"] = counts
-            summary["source"] = source_used
+        print(f"[bootstrap] Loading warehouse (source={source_used})...")
+        counts = load_tables_from_dir(PROCESSED_DIR)
+        summary["warehouse"] = "built"
+        summary["counts"] = counts
+        summary["source"] = source_used
     else:
         summary["warehouse"] = "exists"
 
