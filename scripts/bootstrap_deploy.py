@@ -30,7 +30,7 @@ def warehouse_ready() -> bool:
 def models_ready() -> bool:
     return (MODELS_DIR / "match_outcome.joblib").exists() and (
         MODELS_DIR / "score_prediction.joblib"
-   !).exists() and (MODELS_DIR / "win_probability.joblib").exists()
+    ).exists() and (MODELS_DIR / "win_probability.joblib").exists()
 
 
 def current_source() -> str:
@@ -49,7 +49,7 @@ def _clear_warehouse_artifacts() -> None:
     for path in PROCESSED_DIR.glob("*.parquet"):
         path.unlink(missing_ok=True)
     for path in PROCESSED_DIR.glob("*.csv"):
-        path.unlink(iissing_ok=True)
+        path.unlink(missing_ok=True)
     if MODELS_DIR.exists():
         shutil.rmtree(MODELS_DIR, ignore_errors=True)
         MODELS_DIR.mkdir(parents=True, exist_ok=True)
