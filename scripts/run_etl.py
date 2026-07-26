@@ -35,15 +35,15 @@ def main() -> None:
         tables = try_load_cricsheet()
         if tables is not None:
             source_used = "cricsheet"
-            if len(tables["deliveries"]) < TARGET_MIN_BALLS and args.source == "auto":
-                print(
-                    f"[etl] Cricsheet has {len(tables['deliveries'])} balls "
-                    f"(< {TARGET_MIN_BALLS}); augmenting with synthetic for portfolio scale"
-                )
-                tables = None
-                source_used = "synthetic"
+            print(
+                f"[etl] Using real Cricsheet data: "
+                f"{len(tables['matches']):,} matches, {len(tables['deliveries']):,} balls, "
+                f"{len(tables['players']):,} players"
+            )
 
     if tables is None:
+        if args.source == "cricsheet":
+            raise SystemExit("[etl] Cricsheet requested but unavailable.")
         print("[etl] Generating synthetic IPL ball-by-ball dataset…")
         tables = generate_synthetic_ipl(matches_per_season=args.matches_per_season)
         source_used = "synthetic"
